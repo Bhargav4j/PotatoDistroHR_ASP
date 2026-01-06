@@ -1,0 +1,46 @@
+@page
+@model DepartmentsIndexModel
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<h1>Departments</h1>
+
+<p>
+    <a asp-page="Create" class="btn btn-primary">Add New Department</a>
+</p>
+
+@if (Model.Departments != null && Model.Departments.Any())
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Hotline</th>
+                <th>Manager</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var department in Model.Departments)
+            {
+                <tr>
+                    <td>@department.Id</td>
+                    <td>@department.Name</td>
+                    <td>@department.Hotline</td>
+                    <td>@(department.Manager != null ? $"{department.Manager.FirstName} {department.Manager.LastName}" : "N/A")</td>
+                    <td>
+                        <a asp-page="Details" asp-route-id="@department.Id" class="btn btn-sm btn-info">Details</a>
+                        <a asp-page="Edit" asp-route-id="@department.Id" class="btn btn-sm btn-warning">Edit</a>
+                        <a asp-page="Delete" asp-route-id="@department.Id" class="btn btn-sm btn-danger">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No departments found.</p>
+}

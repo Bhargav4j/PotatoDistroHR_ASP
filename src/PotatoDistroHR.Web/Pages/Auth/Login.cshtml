@@ -1,0 +1,51 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h2>Login</h2>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="All" class="text-danger"></div>
+
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger">@Model.ErrorMessage</div>
+                    }
+
+                    <div class="mb-3">
+                        <label asp-for="EmployeeId" class="form-label">Employee ID</label>
+                        <input asp-for="EmployeeId" class="form-control" />
+                        <span asp-validation-for="EmployeeId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Password" class="form-label">Password</label>
+                        <input asp-for="Password" type="password" class="form-control" />
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="IsAdmin" class="form-label">Login as</label>
+                        <select asp-for="IsAdmin" class="form-select">
+                            <option value="false">Employee</option>
+                            <option value="true">Admin</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
