@@ -9,19 +9,42 @@ Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .Enrich.FromLogContext()
     .WriteTo.Console()
-    .WriteTo.File("logs/potatodistroh-r-.txt", rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 builder.Host.UseSerilog();
 
 // Add services to the container
 builder.Services.AddRazorPages();
-builder.Services.AddSession(options =>
+
+// Add distributed session state using Redis
+var redisConnection = builder.Configuration.GetValue<string>("Redis:ConnectionString")
+    ?? Environment.GetEnvironmentVariable("REDIS_CONNECTION_STRING");
+
+if (!string.IsNullOrEmpty(redisConnection))
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-});
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConnection;
+        options.InstanceName = "PotatoDistroHR_";
+    });
+    builder.Services.AddSession(options =>
+    {
+        options.IdleTimeout = TimeSpan.FromMinutes(30);
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+    });
+}
+else
+{
+    // Fallback to in-memory session for local development
+    builder.Services.AddDistributedMemoryCache();
+    builder.Services.AddSession(options =>
+    {
+        options.IdleTimeout = TimeSpan.FromMinutes(30);
+        options.Cookie.HttpOnly = true;
+        options.Cookie.IsEssential = true;
+    });
+}
 
 // Add application and infrastructure services
 builder.Services.AddApplicationServices();
@@ -29,6 +52,9 @@ builder.Services.AddInfrastructureServices(builder.Configuration);
 
 // Add HttpContextAccessor
 builder.Services.AddHttpContextAccessor();
+
+// Add health checks
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -49,6 +75,11 @@ app.UseSession();
 app.UseAuthorization();
 
 app.MapRazorPages();
+
+// Map health check endpoints
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/live");
+app.MapHealthChecks("/health/ready");
 
 try
 {
